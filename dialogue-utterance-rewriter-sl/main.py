@@ -20,7 +20,6 @@ def tokenize_post(s):
     r = []
     for sentence in sentences:
         r.append(jieba.lcut(sentence))
-        r.append('<eos>')
     r.pop(-1)
     return r
 
