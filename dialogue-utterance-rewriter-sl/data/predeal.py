@@ -10,9 +10,10 @@ lines = in_file.readlines()
 cnt = 0
 for line in lines:
     line = line.split()
-    post = ' '.join(line[:-1])
+    post = ' '.join(line[:-2])
+    query = line[-2]
     resp = line[-1]
-    d = {'post': post, 'resp': resp}
+    d = {'post': post, 'query': query, 'resp': resp}
     if cnt < 18000:
         json.dump(d, out_file_train)
         out_file_train.write('\n')
@@ -22,5 +23,6 @@ for line in lines:
     else:
         json.dump(d, out_file_test)
         out_file_test.write('\n')
-
+    if cnt == 0:
+        print(d)
     cnt += 1
