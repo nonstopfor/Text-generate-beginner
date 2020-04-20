@@ -7,7 +7,7 @@ class Lstm(nn.Module):
     # single-layer bidirectional LSTM encoder
     def __init__(self, inp_voc_dim, emb_dim, enc_hid_dim, dec_hid_dim, dropout):
         super().__init__()  # python3
-        self.embedding = nn.Embedding(inp_voc_dim, emb_dim)
+        self.embedding = nn.Embedding(inp_voc_dim, emb_dim) # 我们没有预训练过的embedding吗+
         self.rnn = nn.LSTM(emb_dim, enc_hid_dim, num_layers=1, bidirectional=True)
         self.dropout = nn.Dropout(dropout)
         self.fc_h = nn.Linear(enc_hid_dim * 2, dec_hid_dim)
@@ -51,7 +51,17 @@ class Decoder(nn.Module):
 
         self.embedding = nn.Embedding(out_voc_dim, emb_dim)
         self.rnn = nn.LSTM(emb_dim, dec_hid_dim, num_layers=1)
-        self.attention = attention
+        self.attention = attention(enc_hid_dim, dec_hid_dim)
+        self.dec_hid_dim = dec_hid_dim
+        self.dropout = nn.Dropout(dropout)
 
     def forward(self, input, hidden, enc_outputs):
-        pass
+        # input = [inputsize, batch_size]
+        embedded = self.dropout(self.embedding(input))
+        embedded = self.dropout(embedded)
+        att_dist = torch.matmul(self.attention(hidden, enc_outputs), embedded)
+        # output = [out_voc_dim, batch_size]
+        # attention distribution = [attention len, batch_size]
+        # out_state = [state size, batch_size]
+        output, out_state = self.rnn(embedded, att_dist)
+        return output, out_state
